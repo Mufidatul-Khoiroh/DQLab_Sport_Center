@@ -1,0 +1,43 @@
+https://console.cloud.google.com/bigquery?sq=444166339142:cbd367c0356d48e39a99df3cdcb0d8ae
+
+--Tampilan data awal
+select * from `retail_dataset.data_retail`
+order by Row_Num;
+
+
+--Mengubah kolom 'First_Transaction' dan 'Last_Transaction' ke dalam tipe date
+--Mengabaikan kolom 'no' dan 'Row_Num'
+select
+  Customer_ID,
+  Product,
+  date(timestamp_seconds(cast(First_Transaction / 1000 as int64))) as First_Transaction,
+  date(timestamp_seconds(cast(Last_Transaction / 1000 as int64))) as Last_Transaction,
+  Average_Transaction_Amount,
+  Count_Transaction
+from `retail_dataset.data_retail`;
+
+
+--Mengecek tanggal terakhir dari kolom 'Last_Transaction'
+select
+  date(timestamp_seconds(cast(max(Last_Transaction) / 1000 as int64))) as Last_Transaction_Date
+from `retail_dataset.data_retail`;
+
+
+--Mendefinisikan kolom baru 'Total_Amount' dan 'is_churn'
+select
+  Customer_ID,
+  Product,
+  date(timestamp_seconds(cast(First_Transaction / 1000 as int64))) as First_Transaction_Date,
+  date(timestamp_seconds(cast(Last_Transaction / 1000 as int64))) as Last_Transaction_Date,
+  Average_Transaction_Amount,
+  Count_Transaction,
+
+--Menambah kolom 'Total_Amount'
+  Average_Transaction_Amount * Count_Transaction as Total_Amount,
+
+--Menambah kolom 'is_churn': True jika Last_Transaction sebelum 1 Agustus 2018
+case 
+  when date(timestamp_seconds(cast(Last_Transaction / 1000 as int64))) < date('2018-08-01') then true
+  else false
+end as is_churn
+from `retail_dataset.data_retail`;
